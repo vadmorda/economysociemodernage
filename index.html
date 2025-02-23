@@ -1,45 +1,47 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Match Concepts - Protestant Reformation</title>
+    <title>Arrastra y Clasifica - Economía y Sociedad Siglo XVI</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             text-align: center;
-            background: url('https://i.imgur.com/MfQDbrT.jpeg') no-repeat center center fixed;
+            background: url('https://i.imgur.com/v3IBkDr.jpeg') no-repeat center center fixed;
             background-size: cover;
             padding: 20px;
         }
         .container {
-            width: 70%;
+            width: 80%;
             margin: auto;
             background: rgba(255, 255, 255, 0.9);
             padding: 30px;
             border-radius: 15px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         }
-        .terms, .definitions {
-            display: inline-block;
-            width: 45%;
-            text-align: left;
+        .categories {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin-top: 20px;
         }
-        .term, .definition {
+        .category {
+            width: 45%;
+            min-height: 150px;
+            border: 2px dashed #333;
+            padding: 10px;
+            border-radius: 10px;
+            background: #f4f4f4;
+            margin-bottom: 20px;
+        }
+        .draggable {
             padding: 10px;
             margin: 10px;
             background: #e0e0e0;
             border-radius: 5px;
-            cursor: pointer;
+            cursor: grab;
             user-select: none;
-        }
-        .selected {
-            background-color: #0288d1;
-            color: white;
-        }
-        .matched {
-            color: white;
-            font-weight: bold;
         }
         button {
             margin-top: 20px;
@@ -65,97 +67,85 @@
 </head>
 <body>
     <div class="container">
-        <h1>Match Concepts - Protestant Reformation</h1>
-        <div class="terms" id="terms"></div>
-        <div class="definitions" id="definitions"></div>
-        <button onclick="checkAnswers()">Check Answers</button>
+        <h1>Clasificación de Conceptos - Economía y Sociedad Siglo XVI</h1>
+        <p>Arrastra cada concepto a su categoría correcta.</p>
+        <div class="categories">
+            <div class="category" id="demografia" ondrop="drop(event, 'Factores de crecimiento demográfico')" ondragover="allowDrop(event)">
+                <h3>Factores de crecimiento demográfico</h3>
+            </div>
+            <div class="category" id="economia" ondrop="drop(event, 'Transformaciones económicas')" ondragover="allowDrop(event)">
+                <h3>Transformaciones económicas</h3>
+            </div>
+            <div class="category" id="sociedad" ondrop="drop(event, 'Estructura social')" ondragover="allowDrop(event)">
+                <h3>Estructura social</h3>
+            </div>
+            <div class="category" id="comercio" ondrop="drop(event, 'Impacto del comercio transoceánico')" ondragover="allowDrop(event)">
+                <h3>Impacto del comercio transoceánico</h3>
+            </div>
+        </div>
+        <div id="items">
+            <p class="draggable" draggable="true" ondragstart="drag(event)" id="1">Mejora de cosechas</p>
+            <p class="draggable" draggable="true" ondragstart="drag(event)" id="2">Desarrollo del sistema capitalista</p>
+            <p class="draggable" draggable="true" ondragstart="drag(event)" id="3">Ascenso de la burguesía</p>
+            <p class="draggable" draggable="true" ondragstart="drag(event)" id="4">Expansión del comercio atlántico</p>
+            <p class="draggable" draggable="true" ondragstart="drag(event)" id="5">Disminución de la peste</p>
+            <p class="draggable" draggable="true" ondragstart="drag(event)" id="6">Aumento de la circulación de moneda</p>
+            <p class="draggable" draggable="true" ondragstart="drag(event)" id="7">Privilegios de la nobleza</p>
+            <p class="draggable" draggable="true" ondragstart="drag(event)" id="8">Llegada de productos de América</p>
+            <p class="draggable" draggable="true" ondragstart="drag(event)" id="9">Crecimiento del campesinado libre</p>
+            <p class="draggable" draggable="true" ondragstart="drag(event)" id="10">Aparición de bancos privados</p>
+        </div>
+        <button onclick="checkAnswers()">Comprobar respuestas</button>
         <p id="result"></p>
     </div>
     <script>
-        const pairs = [
-            { term: "Martin Luther", definition: "Rejected the sale of indulgences and wrote 95 theses in 1517." },
-            { term: "Calvinism", definition: "Doctrine based on predestination, promoted by John Calvin." },
-            { term: "Anglicanism", definition: "Emerged in England when Henry VIII broke with the Pope in 1534." },
-            { term: "Council of Trent", definition: "Meeting between 1545 and 1563 that defined Catholic doctrine against Protestantism." },
-            { term: "Society of Jesus", definition: "Religious order founded by Ignatius of Loyola in 1540 to strengthen the Catholic faith." },
-            { term: "Nepotism", definition: "Practice of granting ecclesiastical positions to relatives." },
-            { term: "Simony", definition: "Sale of ecclesiastical positions and indulgences." },
-            { term: "Justification by faith", definition: "Lutheran principle that salvation is obtained only through faith." },
-            { term: "Predestination", definition: "Belief that a person's destiny is determined by God." },
-            { term: "Protestant Reformation", definition: "Movement initiated in the 16th century that challenged the authority of the Catholic Church." }
-        ];
+        const correctAnswers = {
+            "1": "Factores de crecimiento demográfico",
+            "2": "Transformaciones económicas",
+            "3": "Estructura social",
+            "4": "Impacto del comercio transoceánico",
+            "5": "Factores de crecimiento demográfico",
+            "6": "Transformaciones económicas",
+            "7": "Estructura social",
+            "8": "Impacto del comercio transoceánico",
+            "9": "Estructura social",
+            "10": "Transformaciones económicas"
+        };
 
-        let selectedTerm = null;
-        let selectedDefinition = null;
-        let matches = {};
-        let matchIndex = 0;
-        const colors = ["#ff5733", "#33ff57", "#3357ff", "#ff33a8", "#ffa533", "#57ff33", "#33a8ff", "#a833ff", "#ff3333", "#33ffa5"];
-
-        function renderItems() {
-            const termsContainer = document.getElementById("terms");
-            const definitionsContainer = document.getElementById("definitions");
-            termsContainer.innerHTML = "";
-            definitionsContainer.innerHTML = "";
-
-            const shuffledTerms = [...pairs].sort(() => Math.random() - 0.5);
-            const shuffledDefinitions = [...pairs].sort(() => Math.random() - 0.5);
-
-            shuffledTerms.forEach(pair => {
-                let termDiv = document.createElement("div");
-                termDiv.classList.add("term");
-                termDiv.textContent = pair.term;
-                termDiv.onclick = () => selectItem(termDiv, "term");
-                termsContainer.appendChild(termDiv);
-            });
-
-            shuffledDefinitions.forEach(pair => {
-                let defDiv = document.createElement("div");
-                defDiv.classList.add("definition");
-                defDiv.textContent = pair.definition;
-                defDiv.onclick = () => selectItem(defDiv, "definition");
-                definitionsContainer.appendChild(defDiv);
-            });
+        function allowDrop(event) {
+            event.preventDefault();
         }
 
-        function selectItem(element, type) {
-            if (type === "term") {
-                if (selectedTerm) selectedTerm.classList.remove("selected");
-                selectedTerm = element;
-            } else {
-                if (selectedDefinition) selectedDefinition.classList.remove("selected");
-                selectedDefinition = element;
-            }
-            element.classList.add("selected");
+        function drag(event) {
+            event.dataTransfer.setData("text", event.target.id);
+        }
 
-            if (selectedTerm && selectedDefinition) {
-                matches[selectedTerm.textContent] = selectedDefinition.textContent;
-                let color = colors[matchIndex % colors.length];
-                selectedTerm.style.backgroundColor = color;
-                selectedDefinition.style.backgroundColor = color;
-                selectedTerm.classList.add("matched");
-                selectedDefinition.classList.add("matched");
-                selectedTerm.onclick = null;
-                selectedDefinition.onclick = null;
-                selectedTerm = null;
-                selectedDefinition = null;
-                matchIndex++;
-            }
+        function drop(event, category) {
+            event.preventDefault();
+            let data = event.dataTransfer.getData("text");
+            let element = document.getElementById(data);
+            event.target.appendChild(element);
+            element.setAttribute("data-category", category);
         }
 
         function checkAnswers() {
             let correct = 0;
             let incorrect = 0;
-            pairs.forEach(pair => {
-                if (matches[pair.term] === pair.definition) {
+            Object.keys(correctAnswers).forEach(id => {
+                let item = document.getElementById(id);
+                if (item.getAttribute("data-category") === correctAnswers[id]) {
                     correct++;
                 } else {
                     incorrect++;
                 }
             });
-            document.getElementById("result").textContent = `Correct: ${correct}, Incorrect: ${incorrect}`;
+            document.getElementById("result").textContent = `Aciertos: ${correct}, Errores: ${incorrect}`;
         }
 
         renderItems();
     </script>
+</body>
+</html>
+
 </body>
 </html>
